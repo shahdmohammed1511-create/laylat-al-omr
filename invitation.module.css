@@ -301,6 +301,13 @@
 @keyframes title-float { 0%, 100% { transform: translateY(0); opacity: 0.92; } 50% { transform: translateY(-6px); opacity: 1; } }
 
 @media (max-width: 520px) {
+  .main {
+    background-attachment: scroll;
+    background-position: center top;
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+  }
+
   .page { padding-right: 16px; padding-left: 16px; }
 
   .hero { padding-top: 44px; padding-bottom: 20px; }
