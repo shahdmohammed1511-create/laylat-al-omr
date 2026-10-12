@@ -267,7 +267,9 @@ export default function ArabicWeddingInvitation() {
   };
 
   const submitMessage = (formData: FormData) => {
-    if (!formData.get("name") || !formData.get("message")) return;
+    const name = formData.get("name");
+    const message = formData.get("message");
+    if (typeof name !== "string" || typeof message !== "string" || !name.trim() || !message.trim()) return;
     setSent(true);
   };
 

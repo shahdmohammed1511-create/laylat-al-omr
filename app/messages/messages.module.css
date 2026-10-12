@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap");
+
+.messagesPage {
+  min-height: 100vh;
+  padding: 28px 20px 64px;
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(223, 186, 115, 0.12), transparent 45%),
+    #f6f1e8;
+  color: #39221e;
+  font-family: Amiri, Georgia, serif;
+}
+
+.actions {
+  display: flex;
+  width: min(100%, 820px);
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 auto 20px;
+}
+
+.backLink,
+.printButton {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(141, 103, 55, 0.3);
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: rgba(255, 253, 249, 0.85);
+  color: #694526;
+  font: 600 0.82rem Cairo, sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.backLink svg,
+.printButton svg { width: 17px; height: 17px; }
+.printButton { border-color: #8d6737; background: #8d6737; color: #fffaf1; }
+.backLink:hover { background: #fff; }
+.printButton:hover { background: #72512e; }
+
+.letter {
+  position: relative;
+  width: min(100%, 820px);
+  margin: 0 auto;
+  border: 1px solid rgba(168, 133, 79, 0.38);
+  padding: 58px clamp(22px, 7vw, 68px) 44px;
+  background:
+    linear-gradient(rgba(255, 253, 249, 0.96), rgba(255, 253, 249, 0.96)),
+    repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(168, 133, 79, 0.08) 9px);
+  box-shadow: 0 20px 60px rgba(71, 46, 27, 0.1);
+}
+
+.letter::before,
+.letter::after {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(168, 133, 79, 0.17);
+  content: "";
+  pointer-events: none;
+}
+
+.letterHeader,
+.letterFooter { position: relative; z-index: 1; text-align: center; }
+.ornament { display: inline-grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(168, 133, 79, 0.45); border-radius: 50%; color: #a7834f; }
+.ornament svg { width: 19px; height: 19px; }
+.eyebrow { margin: 14px 0 0; color: #9a7949; font: 600 0.75rem Cairo, sans-serif; letter-spacing: 0.12em; }
+.letterHeader h1 { margin: 0.1rem 0 0; color: #542b32; font: 400 clamp(2.5rem, 7vw, 3.7rem) "Aref Ruqaa", Amiri, serif; }
+.couple { margin: 0.1rem 0 0; color: #987540; font: 400 1.7rem "Aref Ruqaa", Amiri, serif; }
+.rule { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px auto; color: #a7834f; }
+.rule i { width: 48px; height: 1px; background: linear-gradient(90deg, transparent, #b89a68); }
+.rule i:last-child { transform: rotate(180deg); }
+.rule svg { width: 16px; height: 16px; stroke-width: 1.5; }
+.intro { margin: 0; color: #806e5a; font-size: 1.15rem; }
+
+.messageList { display: grid; gap: 14px; margin: 34px 0 38px; }
+.message {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 22px;
+  align-items: start;
+  gap: 12px;
+  border: 1px solid rgba(168, 133, 79, 0.22);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  background: rgba(255, 255, 255, 0.72);
+  break-inside: avoid;
+}
+
+.messageNumber { padding-top: 1px; color: #b69a6d; font: 600 0.72rem Cairo, sans-serif; }
+.messageMeta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.messageMeta h2 { margin: 0; color: #754b35; font: 700 1rem Cairo, sans-serif; }
+.messageMeta time { flex: 0 0 auto; color: #a69a89; font: 400 0.68rem Cairo, sans-serif; }
+.messageContent > p { margin: 8px 0 0; color: #51463a; font-size: 1.2rem; line-height: 1.8; }
+.messageHeart { display: grid; width: 22px; height: 22px; place-items: center; color: #c59c82; }
+.messageHeart svg { width: 16px; height: 16px; stroke-width: 1.5; }
+
+.letterFooter { border-top: 1px solid rgba(168, 133, 79, 0.2); padding-top: 14px; }
+.letterFooter .rule { margin: 0 auto 10px; }
+.letterFooter p { margin: 0; color: #805c36; font: 400 1.4rem "Aref Ruqaa", Amiri, serif; }
+.letterFooter small { display: block; margin-top: 6px; color: #a09280; font: 400 0.72rem Cairo, sans-serif; }
+
+@media (max-width: 520px) {
+  .messagesPage { padding: 16px 12px 36px; }
+  .actions { margin-bottom: 12px; }
+  .backLink, .printButton { padding: 7px 12px; font-size: 0.72rem; }
+  .letter { padding: 42px 20px 30px; }
+  .message { grid-template-columns: 25px minmax(0, 1fr) 18px; gap: 8px; padding: 14px 12px; }
+  .messageMeta { align-items: flex-start; flex-direction: column; gap: 0; }
+  .messageContent > p { font-size: 1.08rem; }
+}
+
+@page { size: A4; margin: 14mm; }
+
+@media print {
+  :global(html), :global(body) { min-height: auto; background: #fff; }
+  .messagesPage { min-height: auto; padding: 0; background: #fff; color: #30231f; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .actions { display: none; }
+  .letter { width: 100%; margin: 0; border: 1px solid #c7b38e; padding: 12mm 13mm 10mm; box-shadow: none; }
+  .letter::before, .letter::after { inset: 3mm; }
+  .messageList { gap: 5mm; margin: 9mm 0; }
+  .message { border-color: #e1d7c6; background: #fffdfa; }
+}
