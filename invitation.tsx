@@ -5,6 +5,8 @@ import {
   CalendarDays,
   Check,
   Clock3,
+  ExternalLink,
+  Heart,
   Landmark,
   MapPin,
   Send,
@@ -130,10 +132,26 @@ export default function ArabicWeddingInvitation() {
   const [opened, setOpened] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [sent, setSent] = useState(false);
+  const [savedWish, setSavedWish] = useState<string | null>(null);
+  const [showFloatingNav, setShowFloatingNav] = useState(false);
   const [countdown, setCountdown] = useState<Countdown>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const revealTimerRef = useRef<number | null>(null);
 
+  // Check saved wish from local storage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("dearly_wedding_wish");
+      if (stored) {
+        setSavedWish(stored);
+        setSent(true);
+      }
+    } catch {
+      // safe fallback
+    }
+  }, []);
+
+  // Real-time Countdown
   useEffect(() => {
     const updateCountdown = () => {
       const remaining = Math.max(0, wedding.countdownDate.getTime() - Date.now());
@@ -149,6 +167,25 @@ export default function ArabicWeddingInvitation() {
     return () => window.clearInterval(timer);
   }, []);
 
+  // Floating Action Bar visibility on scroll
+  useEffect(() => {
+    if (!revealed) return;
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight;
+      const windowHeight = window.innerHeight;
+      // Show when user scrolled past hero (approx 320px) and hide near bottom credit
+      if (scrollY > 320 && scrollY + windowHeight < docHeight - 120) {
+        setShowFloatingNav(true);
+      } else {
+        setShowFloatingNav(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [revealed]);
+
+  // Smooth Intersection Observer for scroll reveal
   useEffect(() => {
     if (!revealed) return;
     const observer = new IntersectionObserver(
@@ -160,12 +197,14 @@ export default function ArabicWeddingInvitation() {
           }
         });
       },
-      { threshold: 0.12 },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
     );
+
     document.querySelectorAll(`.${styles.reveal}`).forEach((element) => observer.observe(element));
     return () => observer.disconnect();
   }, [revealed]);
 
+  // Canvas particle animation optimized for mobile FPS
   useEffect(() => {
     if (!revealed || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const canvas = canvasRef.current;
@@ -176,26 +215,31 @@ export default function ArabicWeddingInvitation() {
     let width = 0;
     let height = 0;
     let frame = 0;
+    const isMobile = window.innerWidth < 640;
+    const particleCount = isMobile ? 22 : 48;
     const particles: Particle[] = [];
+
     const resize = () => {
-      const scale = Math.min(window.devicePixelRatio || 1, 2);
+      const scale = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width * scale;
       canvas.height = height * scale;
       context.setTransform(scale, 0, 0, scale, 0, 0);
     };
-    for (let index = 0; index < 64; index += 1) {
+
+    for (let index = 0; index < particleCount; index += 1) {
       particles.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        radius: 0.5 + Math.random() * 2.2,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: -(Math.random() * 0.5 + 0.15),
+        radius: 0.6 + Math.random() * (isMobile ? 1.5 : 2.0),
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: -(Math.random() * 0.4 + 0.12),
         alpha: Math.random(),
-        fade: (0.003 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1),
+        fade: (0.003 + Math.random() * 0.01) * (Math.random() > 0.5 ? 1 : -1),
       });
     }
+
     const draw = () => {
       context.clearRect(0, 0, width, height);
       particles.forEach((particle) => {
@@ -207,11 +251,15 @@ export default function ArabicWeddingInvitation() {
           particle.x = Math.random() * width;
         }
         if (particle.alpha <= 0 || particle.alpha >= 1) particle.fade *= -1;
+
         context.save();
-        context.globalAlpha = particle.alpha * 0.6;
+        context.globalAlpha = Math.max(0, Math.min(1, particle.alpha * 0.65));
         context.fillStyle = "#dfba73";
-        context.shadowBlur = 8;
-        context.shadowColor = "#c5a059";
+        // Avoid heavy shadow blur on mobile for smooth 60fps scrolling
+        if (!isMobile) {
+          context.shadowBlur = 6;
+          context.shadowColor = "#c5a059";
+        }
         context.beginPath();
         context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
         context.fill();
@@ -219,8 +267,9 @@ export default function ArabicWeddingInvitation() {
       });
       frame = window.requestAnimationFrame(draw);
     };
+
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
     frame = window.requestAnimationFrame(draw);
     return () => {
       window.cancelAnimationFrame(frame);
@@ -234,11 +283,19 @@ export default function ArabicWeddingInvitation() {
 
   const openEnvelope = () => {
     if (opened) return;
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([25, 30, 40]);
+      } catch {
+        // safe ignore
+      }
+    }
     setOpened(true);
+    // Smooth transition into revealed state
     revealTimerRef.current = window.setTimeout(() => {
       setRevealed(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1_200);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }, 700);
   };
 
   const downloadCalendar = () => {
@@ -251,7 +308,7 @@ export default function ArabicWeddingInvitation() {
       "BEGIN:VEVENT",
       `DTSTART:${wedding.calendarStart}`,
       `DTEND:${wedding.calendarEnd}`,
-      `SUMMARY:${escapeCalendarText(`زفاف ${couple}`)}`,
+      `SUMMARY:${escapeCalendarText(`حفل زفاف ${couple}`)}`,
       `DESCRIPTION:${escapeCalendarText(`حفل زفاف ${couple} في ${wedding.hallName}`)}`,
       `LOCATION:${escapeCalendarText(`${wedding.hallName} - ${wedding.address}`)}`,
       "END:VEVENT",
@@ -266,30 +323,74 @@ export default function ArabicWeddingInvitation() {
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1_000);
   };
 
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+    `حفل زفاف ${wedding.groom} و ${wedding.bride}`,
+  )}&dates=${wedding.calendarStart}/${wedding.calendarEnd}&details=${encodeURIComponent(
+    `نتشرف بحضوركم حفل زفاف ${wedding.groom} و ${wedding.bride} في ${wedding.hallName}`,
+  )}&location=${encodeURIComponent(`${wedding.hallName} - ${wedding.address}`)}`;
+
   const submitMessage = (formData: FormData) => {
     const name = formData.get("name");
     const message = formData.get("message");
     if (typeof name !== "string" || typeof message !== "string" || !name.trim() || !message.trim()) return;
+    const text = `${name.trim()}: «${message.trim()}»`;
+    try {
+      localStorage.setItem("dearly_wedding_wish", text);
+    } catch {
+      // ignore
+    }
+    setSavedWish(text);
     setSent(true);
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([40]);
+      } catch {
+        // ignore
+      }
+    }
   };
 
+  const resetWish = () => {
+    try {
+      localStorage.removeItem("dearly_wedding_wish");
+    } catch {
+      // ignore
+    }
+    setSavedWish(null);
+    setSent(false);
+  };
+
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  // Natural Arabic RTL Countdown Order: Right -> Left (أيام -> ساعات -> دقائق -> ثوانٍ)
   const countdownValues = [
-    [countdown.days, "أيام"],
-    [countdown.hours, "ساعات"],
-    [countdown.minutes, "دقائق"],
-    [countdown.seconds, "ثوانٍ"],
-  ] as const;
+    { value: countdown.days, label: "أيام" },
+    { value: countdown.hours, label: "ساعات" },
+    { value: countdown.minutes, label: "دقائق" },
+    { value: countdown.seconds, label: "ثوانٍ" },
+  ];
 
   return (
     <main lang="ar" dir="rtl" className={`${styles.invitation} dearly-arabic-invitation-page`}>
+      {/* Seamless fixed background layer: eliminates all repeating seams on any screen */}
+      <div className={styles.fixedBackground} aria-hidden="true" />
+
+      {/* Floating ambient particles */}
       <canvas className={`${styles.particles} ${revealed ? styles.particlesVisible : ""}`} ref={canvasRef} aria-hidden="true" />
 
+      {/* Interactive Envelope screen */}
       {!revealed && (
         <div className={`${styles.envelopeScreen} ${opened ? styles.envelopeScreenOpening : ""}`}>
           <div className={styles.envelopeHeading}>
             <p>✦ اضغط لفتح دعوتكم ✦</p>
             <span>دعوة زفاف {wedding.groom} و{wedding.bride}</span>
           </div>
+
           <button
             className={`${styles.envelopeScene} ${opened ? styles.envelopeSceneOpening : ""}`}
             type="button"
@@ -299,13 +400,15 @@ export default function ArabicWeddingInvitation() {
             <span className={styles.envelopePhoto} aria-hidden="true" />
             <span className={styles.envelopeGlow} aria-hidden="true" />
           </button>
-          <p className={styles.tapHint} aria-hidden="true">اضغط على الظرف لفتح الدعوة</p>
+
+          <p className={styles.tapHint} aria-hidden="true">اضغط على الظرف لفتح تفاصيل ليلة العمر</p>
         </div>
       )}
 
+      {/* Main Invitation Page */}
       <div className={`${styles.main} ${revealed ? styles.mainVisible : ""}`}>
         <div className={styles.page}>
-          <section className={`${styles.hero} ${styles.reveal}`}>
+          <section className={`${styles.hero} ${styles.reveal} ${revealed ? styles.visible : ""}`}>
             <p className={styles.bismillah}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
             <div className={styles.divider} aria-hidden="true"><i /><i /><Sparkles /><i /><i /></div>
             <div className={styles.heroPoem}>
@@ -316,6 +419,7 @@ export default function ArabicWeddingInvitation() {
             </div>
             <h1>{wedding.groom} و {wedding.bride}</h1>
             <p className={styles.tagline}>جمعنا الله على خير</p>
+
             <div className={styles.coupleArtwork}>
               <Crest />
               <div className={styles.heroDate}>
@@ -346,31 +450,35 @@ export default function ArabicWeddingInvitation() {
             <p>«وجودكم هو أحلى جزء في الحكاية»</p>
           </div>
 
+          {/* Countdown Section: Arabic RTL with flexible responsive boxes */}
           <section className={`${styles.countdownSection} ${styles.reveal}`}>
             <p className={styles.sectionLabel}>✦ العد التنازلي ✦</p>
             <h2>حتى يجمعنا الله على خير</h2>
             <div className={styles.countdown}>
-              {countdownValues.map(([value, label]) => (
-                <div className={styles.countdownItem} key={label}>
-                  <span className={styles.countdownValue}>{arabicNumber(value)}</span>
-                  <span className={styles.countdownLabel}>{label}</span>
+              {countdownValues.map((item) => (
+                <div className={styles.countdownItem} key={item.label}>
+                  <span className={styles.countdownValue}>{arabicNumber(item.value)}</span>
+                  <span className={styles.countdownLabel}>{item.label}</span>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* Event Details Section */}
           <section className={styles.eventDetails} aria-labelledby="details-heading">
             <div className={`${styles.detailsHeading} ${styles.reveal}`}>
               <p className={styles.sectionLabel}>✦ تفاصيل ليلة العمر ✦</p>
               <h2 id="details-heading">موعدنا معكم</h2>
             </div>
 
-            <article className={`${styles.detailCard} ${styles.reveal}`}>
+            {/* Date & Calendar Card */}
+            <article id="date-card" className={`${styles.detailCard} ${styles.reveal}`}>
               <div className={styles.detailIcon}><CalendarDays aria-hidden="true" /></div>
               <p className={styles.detailLabel}>الزمان واليوم</p>
               <h3>{wedding.dayName}</h3>
               <p className={styles.detailValue}>{wedding.dateGregorian}</p>
               <p className={styles.detailSubvalue}>{wedding.dateHijri}</p>
+
               <div className={styles.calendar} aria-label="تقويم شهر مارس ٢٠٢٧">
                 <span>مارس ٢٠٢٧</span>
                 <div className={styles.calendarGrid}>
@@ -382,11 +490,18 @@ export default function ArabicWeddingInvitation() {
                   })}
                 </div>
               </div>
-              <button className={styles.outlineButton} type="button" onClick={downloadCalendar}>
-                <CalendarDays aria-hidden="true" /> احفظوا الموعد في التقويم
-              </button>
+
+              <div className={styles.buttonGroup}>
+                <button className={styles.outlineButton} type="button" onClick={downloadCalendar}>
+                  <CalendarDays aria-hidden="true" /> حفظ الموعد بالتقويم
+                </button>
+                <a className={styles.secondaryLink} href={googleCalendarUrl} target="_blank" rel="noopener noreferrer">
+                  إضافة مباشرة إلى تقويم Google <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
+                </a>
+              </div>
             </article>
 
+            {/* Time Card */}
             <article className={`${styles.detailCard} ${styles.reveal}`}>
               <div className={styles.detailIcon}><Clock3 aria-hidden="true" /></div>
               <p className={styles.detailLabel}>الموعد وساعة الحضور</p>
@@ -395,42 +510,55 @@ export default function ArabicWeddingInvitation() {
               <p className={styles.detailSubvalue}>{wedding.timeDescription}</p>
             </article>
 
-            <article className={`${styles.detailCard} ${styles.reveal}`}>
+            {/* Hall & Location Card */}
+            <article id="venue-card" className={`${styles.detailCard} ${styles.reveal}`}>
               <div className={styles.detailIcon}><Landmark aria-hidden="true" /></div>
               <p className={styles.detailLabel}>مكان الاحتفال</p>
               <h3>{wedding.hallName}</h3>
               <p className={styles.detailValue}>{wedding.hallSubtitle}</p>
               <p className={styles.detailSubvalue}>{wedding.address}</p>
-              <a className={styles.outlineButton} href={wedding.mapUrl} target="_blank" rel="noopener noreferrer">
-                <MapPin aria-hidden="true" /> افتحوا الموقع على خرائط جوجل
-              </a>
+              <div className={styles.buttonGroup}>
+                <a className={styles.outlineButton} href={wedding.mapUrl} target="_blank" rel="noopener noreferrer">
+                  <MapPin aria-hidden="true" /> افتحوا الموقع على خرائط جوجل
+                </a>
+              </div>
             </article>
           </section>
 
-          <section className={`${styles.guestMessage} ${styles.reveal}`}>
+          {/* Guest Wishes & Message Section */}
+          <section id="message-card" className={`${styles.guestMessage} ${styles.reveal}`}>
             <h2>✦ رسالة من القلب ✦</h2>
             <p className={styles.messageLead}>أرسلوا لنا كلمةً طيبة أو دعاءً من القلب يبقى ذكرى جميلة</p>
             {sent ? (
               <div className={styles.successMessage} role="status">
                 <span><Check aria-hidden="true" /></span>
                 <p>جزاكم الله خيرًا، رسالتكم وصلت بكل محبة وتقدير</p>
+                {savedWish && <div className={styles.savedWishText}>{savedWish}</div>}
                 <small>«بارك الله فيكم وجعل دياركم عامرة بالأفراح والمودة»</small>
+                <div>
+                  <button type="button" onClick={resetWish} className={styles.resetWishBtn}>
+                    إرسال تهنئة أخرى
+                  </button>
+                </div>
               </div>
             ) : (
               <form action={submitMessage} className={styles.messageForm}>
                 <label>
-                  <span>الاسم</span>
+                  <span>الاسم الكريم</span>
                   <input name="name" autoComplete="name" placeholder="أدخل اسمك هنا..." required />
                 </label>
                 <label>
                   <span>رسالتك للعروسين</span>
                   <textarea name="message" placeholder="اكتب ما يفيض به خاطرك... دعاء، كلمة محبة، أو أمنية طيبة" rows={4} required />
                 </label>
-                <button className={styles.submitButton} type="submit">✦ أرسلوا رسالتكم <Send aria-hidden="true" /></button>
+                <button className={styles.submitButton} type="submit">
+                  ✦ أرسلوا رسالتكم <Send aria-hidden="true" />
+                </button>
               </form>
             )}
           </section>
 
+          {/* Footer */}
           <footer className={`${styles.invitationFooter} ${styles.reveal}`}>
             <div className={styles.divider} aria-hidden="true"><i /><i /><i /><i /></div>
             <p>«اللهم بارك لنا وبارك علينا<br />واجمع بيننا في خير»</p>
@@ -438,6 +566,7 @@ export default function ArabicWeddingInvitation() {
             <time dateTime="2027-03-11">{wedding.dateGregorian}</time>
           </footer>
 
+          {/* Brand Credits */}
           <div className={styles.dearlyCredit}>
             <a
               href="https://www.instagram.com/dearly_digitalstudio?stkn=MWplc2Vydmt3dmcyeg%3D%3D&amp;utm_source=qr"

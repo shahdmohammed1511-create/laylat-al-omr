@@ -11,11 +11,13 @@
   --cream: #fdfbf7;
   --cream-warm: #f7f2e8;
   --cream-border: #e9dec7;
+  --gold-gradient: linear-gradient(135deg, #f4da9b 0%, #dfba73 50%, #997736 100%);
   position: relative;
   z-index: 0;
   min-height: 100vh;
-  overflow: hidden;
-  background: var(--burgundy-deep);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background-color: var(--burgundy-deep);
   color: var(--cream);
   font-family: Amiri, Georgia, serif;
   font-size: 18px;
@@ -29,6 +31,28 @@
   display: none;
 }
 
+/* FIXED BACKGROUND: Zero repetition seams, zero mobile repaint lag */
+.fixedBackground {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--burgundy-deep);
+  background-image:
+    radial-gradient(ellipse at 50% 25%, rgba(68, 14, 26, 0.42) 0%, rgba(18, 3, 8, 0.92) 100%),
+    linear-gradient(180deg, rgba(20, 2, 7, 0.35) 0%, rgba(14, 2, 6, 0.78) 100%),
+    url("./assets/floral-bg-optimized.jpg");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Canvas Particles */
 .particles {
   position: fixed;
   z-index: 2;
@@ -40,8 +64,11 @@
   transition: opacity 1.2s ease;
 }
 
-.particlesVisible { opacity: 1; }
+.particlesVisible {
+  opacity: 1;
+}
 
+/* ENVELOPE OPENING SCREEN */
 .envelopeScreen {
   position: fixed;
   z-index: 100;
@@ -51,19 +78,23 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 20px;
-  background-image: linear-gradient(rgba(32, 3, 10, 0.64), rgba(18, 2, 7, 0.8)), url("./assets/floral-bg-optimized.jpg");
-  background-size: cover;
-  background-position: center;
-  transition: opacity 1.2s ease, visibility 1.2s ease, transform 1.2s ease;
+  padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: radial-gradient(ellipse at 50% 50%, rgba(32, 3, 10, 0.5) 0%, rgba(18, 2, 7, 0.88) 100%);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.75s ease, transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
 }
 
-.envelopeScreenOpening { opacity: 0; transform: scale(1.025); visibility: hidden; pointer-events: none; }
+.envelopeScreenOpening {
+  opacity: 0;
+  transform: scale(1.04);
+  visibility: hidden;
+  pointer-events: none;
+}
 
 .envelopeHeading {
   position: relative;
   z-index: 2;
-  margin-bottom: 2.4rem;
+  margin-bottom: 2rem;
   text-align: center;
   animation: title-float 2.5s ease-in-out infinite;
 }
@@ -72,191 +103,916 @@
   margin: 0 0 0.4rem;
   color: var(--gold-light);
   font-family: "Aref Ruqaa", Amiri, serif;
-  font-size: 1.75rem;
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
   letter-spacing: 0.04em;
   text-shadow: 0 0 30px rgba(223, 186, 115, 0.7), 0 2px 10px rgba(0, 0, 0, 0.95);
 }
 
-.envelopeHeading span { color: rgba(253, 251, 247, 0.72); font-family: Cairo, sans-serif; font-size: 1rem; font-weight: 300; }
+.envelopeHeading span {
+  color: rgba(253, 251, 247, 0.75);
+  font-family: Cairo, sans-serif;
+  font-size: clamp(0.85rem, 3.2vw, 1.05rem);
+  font-weight: 300;
+}
 
 .envelopeScene {
   position: relative;
   z-index: 2;
-  width: min(580px, 94vw);
+  width: min(540px, 92vw);
   aspect-ratio: 476 / 330;
   border: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 0;
   background: transparent;
   cursor: pointer;
-  transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 700ms ease;
+  outline: none;
+  transition: transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .envelopePhoto {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: 14px;
   background: center / cover no-repeat url("./assets/real_envelope_exact.jpg");
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.55),
-    0 8px 24px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(197, 160, 89, 0.22),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: transform 350ms ease;
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(197, 160, 89, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 350ms ease;
 }
 
-.envelopeScene:hover .envelopePhoto { transform: translateY(-4px) scale(1.012); }
-.envelopeSceneOpening { transform: translateY(-12px) scale(1.055); opacity: 0; pointer-events: none; }
+.envelopeScene:hover .envelopePhoto {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(223, 186, 115, 0.25);
+}
+
+.envelopeScene:active .envelopePhoto {
+  transform: translateY(1px) scale(0.985);
+}
+
+.envelopeSceneOpening {
+  transform: translateY(-16px) scale(1.06);
+  opacity: 0;
+  pointer-events: none;
+}
 
 .envelopeGlow {
   position: absolute;
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70%;
-  height: 40px;
+  width: 75%;
+  height: 44px;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(197, 160, 89, 0.35) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(223, 186, 115, 0.45) 0%, transparent 70%);
   pointer-events: none;
   animation: glow-pulse 3s ease-in-out infinite;
-  filter: blur(8px);
+  filter: blur(10px);
+}
+
+/* WAX SEAL CALL-TO-ACTION BADGE */
+.waxSealHint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: rgba(24, 3, 8, 0.82);
+  border: 1px solid rgba(223, 186, 115, 0.7);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(223, 186, 115, 0.35);
+  color: var(--gold-light);
+  font-family: Cairo, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  animation: seal-pulse 2.2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.sealSparkle {
+  width: 16px;
+  height: 16px;
+  color: var(--gold-bright);
 }
 
 .tapHint {
-  margin: 1.4rem 0 0;
-  color: rgba(223, 186, 115, 0.55);
+  margin: 1.5rem 0 0;
+  color: rgba(223, 186, 115, 0.7);
   font-family: Cairo, sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 400;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   animation: title-float 2.5s 0.8s ease-in-out infinite;
+}
+
+@keyframes seal-pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(223, 186, 115, 0.3);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 28px rgba(223, 186, 115, 0.55);
+  }
 }
 
 @keyframes glow-pulse {
   0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-  50% { opacity: 1; transform: translateX(-50%) scale(1.12); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
 }
 
+@keyframes title-float {
+  0%, 100% { transform: translateY(0); opacity: 0.92; }
+  50% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* MAIN INVITATION CONTENT CONTAINER */
 .main {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  background-color: var(--burgundy-deep);
-  background-image: linear-gradient(rgba(38, 3, 11, 0.28), rgba(18, 2, 7, 0.5)), url("./assets/floral-bg-optimized.jpg");
-  background-position: center top;
-  background-size: cover;
-  background-attachment: fixed;
+  min-height: 100dvh;
+  background: transparent;
   opacity: 0;
-  transition: opacity 1.4s ease;
+  transform: translateY(14px);
+  transition: opacity 0.85s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: opacity, transform;
 }
 
-.mainVisible { opacity: 1; }
-.page { position: relative; z-index: 2; width: min(100%, 768px); margin: 0 auto; padding: 0 24px 60px; }
+.mainVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-.hero { padding: 68px 0 24px; }
-.bismillah { margin-bottom: 1.4rem; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2.15rem; text-shadow: 0 0 35px rgba(223, 186, 115, 0.5), 0 2px 10px rgba(0, 0, 0, 0.9); }
+.page {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 740px);
+  margin: 0 auto;
+  padding: 0 20px max(60px, env(safe-area-inset-bottom));
+}
 
-.divider { display: flex; align-items: center; justify-content: center; gap: 11px; margin: 1.35rem 0; color: var(--gold); }
+/* HERO SECTION */
+.hero {
+  padding: max(48px, calc(env(safe-area-inset-top) + 24px)) 0 20px;
+}
+
+.bismillah {
+  margin-bottom: 1.2rem;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.6rem, 5.5vw, 2.2rem);
+  text-shadow: 0 0 35px rgba(223, 186, 115, 0.5), 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 1.2rem 0;
+  color: var(--gold);
+}
+
 .divider::before,
-.divider::after { width: min(20vw, 130px); height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); content: ""; }
-.divider i { width: 6px; height: 6px; transform: rotate(45deg); background: var(--gold-light); box-shadow: 0 0 12px rgba(223, 186, 115, 0.45); }
-.divider svg { width: 21px; height: 21px; fill: var(--gold); stroke-width: 1; }
+.divider::after {
+  width: min(22vw, 130px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  content: "";
+}
 
-.heroPoem { max-width: 580px; margin: 1.25rem auto; color: rgba(253, 251, 247, 0.94); font-size: 1.35rem; line-height: 2; }
-.heroPoem p { margin: 0.2rem 0; }
-.eventLead { margin-top: 0.9rem !important; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 1.65rem; text-shadow: 0 0 20px rgba(223, 186, 115, 0.45); }
-.hero h1 { margin: 0.3rem 0; color: var(--cream); font-family: "Aref Ruqaa", Amiri, serif; font-size: clamp(3.4rem, 12vw, 5.8rem); line-height: 1.2; text-shadow: 0 0 45px rgba(223, 186, 115, 0.45), 0 4px 20px rgba(0, 0, 0, 0.95); }
-.tagline { color: var(--gold-light); font-size: 1.5rem; font-style: italic; }
+.divider i {
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--gold-light);
+  box-shadow: 0 0 10px rgba(223, 186, 115, 0.45);
+}
 
-.coupleArtwork { display: flex; flex-direction: column; align-items: center; margin: 2rem auto 0; padding: 0 12px; }
-.crest { position: relative; display: grid; width: 112px; height: 112px; place-items: center; margin-bottom: 1.2rem; }
-.crest svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.85)); }
-.crest span { position: relative; z-index: 1; padding-bottom: 4px; background: linear-gradient(135deg, #f4da9b, #dfba73 45%, #997736); background-clip: text; color: transparent; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8)); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2rem; font-weight: 700; }
-.heroDate { margin-bottom: 1.2rem; }
-.heroDate p { margin: 0; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 1.9rem; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9); }
-.heroDate span { color: var(--gold); font-family: Cairo, sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.17em; }
-.hallFrame { position: relative; width: min(100%, 500px); overflow: hidden; border: 1px solid rgba(223, 186, 115, 0.3); border-radius: 14px; padding: 2px; background: linear-gradient(180deg, rgba(223, 186, 115, 0.4), transparent 70%); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.72); }
-.hallFrame::after { position: absolute; inset: 4px; border: 1px solid rgba(223, 186, 115, 0.16); border-radius: 11px; content: ""; pointer-events: none; }
-.hallArtwork { display: block; width: 100%; height: auto; border-radius: 11px; }
+.divider svg {
+  width: 19px;
+  height: 19px;
+  fill: var(--gold);
+  stroke-width: 1;
+}
 
-.quran { margin: 2.5rem auto; border: 1px solid rgba(197, 160, 89, 0.32); border-radius: 16px; padding: 2.1rem 1.4rem; background: rgba(12, 2, 6, 0.68); box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 0 30px rgba(197, 160, 89, 0.06); backdrop-filter: blur(12px); }
-.quranOrnament { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1.1rem; color: var(--gold); }
-.quranOrnament i { width: 45px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
-.quranOrnament svg { width: 18px; height: 18px; fill: var(--gold); opacity: 0.85; }
-.quran blockquote { margin: 0; color: var(--cream); font-family: "Aref Ruqaa", Amiri, serif; font-size: clamp(1.45rem, 5vw, 2.05rem); line-height: 1.95; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7); }
-.quran cite { display: block; margin-top: 1rem; color: var(--gold-light); font-size: 1.1rem; font-style: normal; }
+.heroPoem {
+  max-width: 580px;
+  margin: 1rem auto;
+  color: rgba(253, 251, 247, 0.94);
+  font-size: clamp(1.1rem, 3.8vw, 1.35rem);
+  line-height: 1.95;
+}
 
-.invitationCopy { padding: 2rem 0; }
-.sectionLabel { margin: 0 0 0.8rem; color: var(--gold); font-family: Cairo, sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.16em; }
-.invitation h2 { margin: 0 0 1rem; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2.3rem; font-weight: 400; text-shadow: 0 2px 15px rgba(0, 0, 0, 0.8); }
-.invitationCopy > p:last-child { margin: 0 auto; color: rgba(253, 251, 247, 0.92); font-size: 1.4rem; line-height: 2.15; }
-.quote { padding: 1rem 0; }
-.quote p { margin: 1.4rem 0; color: var(--cream); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2rem; line-height: 1.6; text-shadow: 0 0 35px rgba(223, 186, 115, 0.4); }
+.heroPoem p {
+  margin: 0.2rem 0;
+}
 
-.countdownSection { padding: 2rem 0; }
-.countdownSection h2 { color: var(--cream); font-size: 2rem; }
-.countdown { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 1.8rem; direction: ltr; }
-.countdownItem { display: flex; width: 82px; flex-direction: column; align-items: center; }
-.countdownValue { position: relative; display: grid; width: 82px; height: 90px; place-items: center; border: 1px solid rgba(197, 160, 89, 0.38); border-radius: 12px; background: rgba(12, 2, 6, 0.76); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1); color: var(--cream); font-family: Cairo, sans-serif; font-size: 2.25rem; font-weight: 300; backdrop-filter: blur(10px); }
-.countdownValue::after { position: absolute; top: 50%; right: 8%; left: 8%; height: 1px; background: rgba(197, 160, 89, 0.22); content: ""; }
-.countdownLabel { margin-top: 0.5rem; color: var(--gold-light); font-size: 1.05rem; }
+.eventLead {
+  margin-top: 0.8rem !important;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.3rem, 4.5vw, 1.65rem);
+  text-shadow: 0 0 20px rgba(223, 186, 115, 0.45);
+}
 
-.eventDetails { padding: 2rem 0 0; }
-.detailsHeading { margin-bottom: 2rem; }
-.detailsHeading h2 { margin: 0; font-size: 2.5rem; }
-.detailCard { position: relative; overflow: hidden; margin: 1.3rem 0; border: 1px solid rgba(197, 160, 89, 0.34); border-radius: 18px; padding: 2.2rem 1.4rem; background: rgba(14, 2, 7, 0.74); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.58), inset 0 0 25px rgba(197, 160, 89, 0.05); backdrop-filter: blur(12px); transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease; }
-.detailCard::before { position: absolute; top: 0; right: 12%; left: 12%; height: 2px; background: linear-gradient(90deg, transparent, var(--gold-light), transparent); content: ""; }
-.detailCard:hover { transform: translateY(-3px); border-color: rgba(223, 186, 115, 0.6); box-shadow: 0 30px 75px rgba(0, 0, 0, 0.72), 0 0 30px rgba(197, 160, 89, 0.16); }
-.detailIcon { display: grid; width: 54px; height: 54px; place-items: center; margin: 0 auto 0.8rem; border: 1px solid rgba(223, 186, 115, 0.55); border-radius: 50%; background: linear-gradient(135deg, rgba(223, 186, 115, 0.2), rgba(197, 160, 89, 0.07)); color: var(--gold-light); }
-.detailIcon svg { width: 24px; height: 24px; stroke-width: 1.6; }
-.detailLabel { margin: 0; color: var(--gold); font-family: Cairo, sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; }
-.detailCard h3 { margin: 0.2rem 0; color: var(--cream); font-family: "Aref Ruqaa", Amiri, serif; font-size: 1.85rem; font-weight: 400; }
-.detailValue { margin: 0.4rem 0; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2rem; line-height: 1.45; }
-.detailSubvalue { max-width: 520px; margin: 0.2rem auto; color: rgba(253, 251, 247, 0.88); font-size: 1.25rem; line-height: 1.7; }
-.calendar { max-width: 360px; margin: 1.4rem auto 0; color: var(--cream); }
-.calendar > span { display: block; margin-bottom: 0.65rem; color: var(--gold); font-family: Cairo, sans-serif; font-size: 0.8rem; font-weight: 600; }
-.calendarGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 5px; direction: rtl; }
-.calendarGrid b { color: var(--gold-light); font-family: Cairo, sans-serif; font-size: 0.78rem; }
-.calendarGrid i { display: grid; min-height: 34px; place-items: center; border-radius: 50%; color: rgba(253, 251, 247, 0.86); font-size: 0.95rem; font-style: normal; }
-.calendarGrid .calendarDay { background: linear-gradient(135deg, #dfba73, #997736); color: var(--burgundy-deep); font-weight: 700; box-shadow: 0 0 16px rgba(197, 160, 89, 0.28); }
-.outlineButton { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 9px; margin-top: 1.2rem; border: 1px solid rgba(197, 160, 89, 0.45); border-radius: 999px; padding: 10px 20px; background: rgba(223, 186, 115, 0.1); color: var(--gold-light); cursor: pointer; font: 600 0.84rem Cairo, sans-serif; text-decoration: none; transition: background 250ms ease, transform 250ms ease; }
-.outlineButton:hover { transform: translateY(-2px); background: rgba(223, 186, 115, 0.2); }
-.outlineButton svg { width: 18px; height: 18px; }
+.hero h1 {
+  margin: 0.3rem 0;
+  color: var(--cream);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(2.8rem, 11vw, 5.2rem);
+  line-height: 1.2;
+  text-shadow: 0 0 45px rgba(223, 186, 115, 0.45), 0 4px 20px rgba(0, 0, 0, 0.95);
+}
 
-.guestMessage { margin: 2rem auto; border: 1px solid rgba(197, 160, 89, 0.28); border-radius: 18px; padding: 2.4rem 1.5rem; background: rgba(12, 2, 6, 0.72); box-shadow: 0 28px 70px rgba(0, 0, 0, 0.62); backdrop-filter: blur(12px); }
-.guestMessage h2 { margin-bottom: 0.6rem; font-size: 2.2rem; }
-.messageLead { margin: 0 auto 1.8rem; color: rgba(253, 251, 247, 0.8); font-size: 1.2rem; }
-.messageForm { display: grid; gap: 1.1rem; text-align: right; }
-.messageForm label { display: grid; gap: 0.45rem; }
-.messageForm label span { color: var(--gold); font-family: Cairo, sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; }
+.tagline {
+  color: var(--gold-light);
+  font-size: clamp(1.15rem, 4vw, 1.5rem);
+  font-style: italic;
+  margin: 0.2rem 0 0;
+}
+
+.coupleArtwork {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.8rem auto 0;
+  padding: 0 8px;
+}
+
+.crest {
+  position: relative;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  place-items: center;
+  margin-bottom: 1rem;
+}
+
+.crest svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.85));
+}
+
+.crest span {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 4px;
+  background: var(--gold-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.heroDate {
+  margin-bottom: 1.2rem;
+}
+
+.heroDate p {
+  margin: 0;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.5rem, 5vw, 1.95rem);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
+.heroDate span {
+  color: var(--gold);
+  font-family: Cairo, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.hallFrame {
+  position: relative;
+  width: min(100%, 460px);
+  overflow: hidden;
+  border: 1px solid rgba(223, 186, 115, 0.3);
+  border-radius: 14px;
+  padding: 2px;
+  background: linear-gradient(180deg, rgba(223, 186, 115, 0.35), transparent 70%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.72);
+}
+
+.hallFrame::after {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(223, 186, 115, 0.16);
+  border-radius: 11px;
+  content: "";
+  pointer-events: none;
+}
+
+.hallArtwork {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 11px;
+}
+
+/* QURAN SECTION */
+.quran {
+  margin: 2rem auto;
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  border-radius: 16px;
+  padding: 1.8rem 1.2rem;
+  background: rgba(14, 2, 7, 0.75);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.58), inset 0 0 30px rgba(197, 160, 89, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.quranOrnament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+  color: var(--gold);
+}
+
+.quranOrnament i {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.quranOrnament svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--gold);
+  opacity: 0.85;
+}
+
+.quran blockquote {
+  margin: 0;
+  color: var(--cream);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.3rem, 4.8vw, 1.95rem);
+  line-height: 1.95;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.quran cite {
+  display: block;
+  margin-top: 0.9rem;
+  color: var(--gold-light);
+  font-size: clamp(0.95rem, 3.4vw, 1.1rem);
+  font-style: normal;
+}
+
+/* INVITATION TEXT COPY */
+.invitationCopy {
+  padding: 1.6rem 0;
+}
+
+.sectionLabel {
+  margin: 0 0 0.7rem;
+  color: var(--gold);
+  font-family: Cairo, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.invitation h2 {
+  margin: 0 0 0.9rem;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.8rem, 6vw, 2.35rem);
+  font-weight: 400;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.8);
+}
+
+.invitationCopy > p:last-child {
+  margin: 0 auto;
+  color: rgba(253, 251, 247, 0.92);
+  font-size: clamp(1.15rem, 4.2vw, 1.4rem);
+  line-height: 2.1;
+}
+
+.quote {
+  padding: 0.8rem 0;
+}
+
+.quote p {
+  margin: 1.2rem 0;
+  color: var(--cream);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.45rem, 5.5vw, 2rem);
+  line-height: 1.6;
+  text-shadow: 0 0 35px rgba(223, 186, 115, 0.4);
+}
+
+/* COUNTDOWN SECTION: NATURAL RTL ORDER (أيام -> ساعات -> دقائق -> ثوانٍ) */
+.countdownSection {
+  padding: 1.6rem 0;
+}
+
+.countdownSection h2 {
+  color: var(--cream);
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1.6rem;
+  direction: rtl;
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+.countdownItem {
+  display: flex;
+  flex: 1;
+  max-width: 84px;
+  min-width: 60px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdownValue {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1 / 1.05;
+  min-height: 64px;
+  max-height: 90px;
+  place-items: center;
+  border: 1px solid rgba(197, 160, 89, 0.38);
+  border-radius: 12px;
+  background: rgba(14, 2, 7, 0.82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--cream);
+  font-family: Cairo, sans-serif;
+  font-size: clamp(1.55rem, 5.5vw, 2.25rem);
+  font-weight: 400;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.countdownValue::after {
+  position: absolute;
+  top: 50%;
+  right: 8%;
+  left: 8%;
+  height: 1px;
+  background: rgba(197, 160, 89, 0.22);
+  content: "";
+}
+
+.countdownLabel {
+  margin-top: 0.45rem;
+  color: var(--gold-light);
+  font-family: Cairo, sans-serif;
+  font-size: clamp(0.78rem, 2.8vw, 0.95rem);
+  font-weight: 600;
+}
+
+/* EVENT DETAILS CARDS */
+.eventDetails {
+  padding: 1.8rem 0 0;
+}
+
+.detailsHeading {
+  margin-bottom: 1.8rem;
+}
+
+.detailsHeading h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 6.5vw, 2.5rem);
+}
+
+.detailCard {
+  position: relative;
+  overflow: hidden;
+  margin: 1.2rem 0;
+  border: 1px solid rgba(197, 160, 89, 0.34);
+  border-radius: 18px;
+  padding: 2rem 1.3rem;
+  background: rgba(14, 2, 7, 0.78);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.58), inset 0 0 25px rgba(197, 160, 89, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.detailCard::before {
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+  content: "";
+}
+
+.detailCard:hover {
+  border-color: rgba(223, 186, 115, 0.6);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.7), 0 0 25px rgba(197, 160, 89, 0.16);
+}
+
+.detailIcon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin: 0 auto 0.8rem;
+  border: 1px solid rgba(223, 186, 115, 0.55);
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(223, 186, 115, 0.2), rgba(197, 160, 89, 0.07));
+  color: var(--gold-light);
+  box-shadow: 0 0 16px rgba(223, 186, 115, 0.15);
+}
+
+.detailIcon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.6;
+}
+
+.detailLabel {
+  margin: 0;
+  color: var(--gold);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.detailCard h3 {
+  margin: 0.2rem 0;
+  color: var(--cream);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.5rem, 5vw, 1.85rem);
+  font-weight: 400;
+}
+
+.detailValue {
+  margin: 0.35rem 0;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  line-height: 1.45;
+}
+
+.detailSubvalue {
+  max-width: 520px;
+  margin: 0.2rem auto;
+  color: rgba(253, 251, 247, 0.88);
+  font-size: clamp(1.05rem, 3.8vw, 1.25rem);
+  line-height: 1.7;
+}
+
+/* CALENDAR WIDGET */
+.calendar {
+  max-width: 350px;
+  margin: 1.4rem auto 0;
+  color: var(--cream);
+}
+
+.calendar > span {
+  display: block;
+  margin-bottom: 0.65rem;
+  color: var(--gold);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: center;
+  gap: 4px;
+  direction: rtl;
+}
+
+.calendarGrid b {
+  color: var(--gold-light);
+  font-family: Cairo, sans-serif;
+  font-size: 0.78rem;
+  padding: 4px 0;
+}
+
+.calendarGrid i {
+  display: grid;
+  min-height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(253, 251, 247, 0.86);
+  font-size: 0.92rem;
+  font-style: normal;
+}
+
+.calendarGrid .calendarDay {
+  background: var(--gold-gradient);
+  color: var(--burgundy-deep);
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(197, 160, 89, 0.35);
+}
+
+/* BUTTONS WITH TOUCH STATES */
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.2rem;
+  width: 100%;
+  max-width: 380px;
+  margin-inline: auto;
+}
+
+.outlineButton {
+  display: inline-flex;
+  min-height: 48px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(197, 160, 89, 0.5);
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: rgba(223, 186, 115, 0.12);
+  color: var(--gold-light);
+  cursor: pointer;
+  font: 600 0.88rem Cairo, sans-serif;
+  text-decoration: none;
+  transition: background 250ms ease, transform 250ms ease, border-color 250ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.outlineButton:hover {
+  background: rgba(223, 186, 115, 0.22);
+  border-color: var(--gold-light);
+  transform: translateY(-2px);
+}
+
+.outlineButton:active {
+  transform: scale(0.975);
+}
+
+.outlineButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(223, 186, 115, 0.8);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 200ms ease;
+}
+
+.secondaryLink:hover {
+  color: var(--gold-bright);
+}
+
+/* GUEST MESSAGE FORM SECTION */
+.guestMessage {
+  margin: 2rem auto;
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  border-radius: 18px;
+  padding: 2.2rem 1.4rem;
+  background: rgba(14, 2, 7, 0.78);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.guestMessage h2 {
+  margin-bottom: 0.5rem;
+  font-size: clamp(1.75rem, 5.5vw, 2.2rem);
+}
+
+.messageLead {
+  margin: 0 auto 1.6rem;
+  color: rgba(253, 251, 247, 0.82);
+  font-size: clamp(1.05rem, 3.8vw, 1.2rem);
+}
+
+.messageForm {
+  display: grid;
+  gap: 1.1rem;
+  text-align: right;
+}
+
+.messageForm label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.messageForm label span {
+  color: var(--gold);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
 .messageForm input,
-.messageForm textarea { width: 100%; border: 1px solid rgba(197, 160, 89, 0.32); border-radius: 10px; padding: 12px 16px; background: rgba(255, 255, 255, 0.04); color: var(--cream); font: 1.1rem Amiri, Georgia, serif; transition: border-color 200ms ease, box-shadow 200ms ease; }
+.messageForm textarea {
+  width: 100%;
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  border-radius: 12px;
+  padding: 13px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--cream);
+  font-family: Amiri, Georgia, serif;
+  font-size: 1.08rem;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  -webkit-appearance: none;
+}
+
 .messageForm input::placeholder,
-.messageForm textarea::placeholder { color: rgba(253, 251, 247, 0.36); }
+.messageForm textarea::placeholder {
+  color: rgba(253, 251, 247, 0.4);
+}
+
 .messageForm input:focus,
-.messageForm textarea:focus { outline: none; border-color: var(--gold); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15); }
-.messageForm textarea { min-height: 120px; resize: vertical; }
-.submitButton { display: inline-flex; min-height: 54px; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 10px; padding: 12px; background: linear-gradient(135deg, #dfba73, #c5a059 50%, #997736); box-shadow: 0 6px 25px rgba(197, 160, 89, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35); color: #180308; cursor: pointer; font: 700 1.35rem "Aref Ruqaa", Amiri, serif; transition: transform 250ms ease, box-shadow 250ms ease; }
-.submitButton:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(197, 160, 89, 0.5); }
-.submitButton svg { width: 19px; height: 19px; }
-.successMessage { padding: 1rem 0; color: var(--gold-light); font-size: 1.35rem; }
-.successMessage > span { display: grid; width: 44px; height: 44px; place-items: center; margin: 0 auto 0.8rem; border: 1px solid rgba(223, 186, 115, 0.6); border-radius: 50%; }
-.successMessage > span svg { width: 22px; height: 22px; }
-.successMessage p { margin: 0; }
-.successMessage small { display: block; margin-top: 0.6rem; color: var(--gold); font-size: 1.05rem; }
+.messageForm textarea:focus {
+  outline: none;
+  border-color: var(--gold-light);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+}
 
-.invitationFooter { padding: 2rem 0 3rem; }
-.invitationFooter .divider { margin-bottom: 2.2rem; }
-.invitationFooter > p { margin: 0; color: var(--gold-light); font-family: "Aref Ruqaa", Amiri, serif; font-size: 1.8rem; line-height: 1.85; }
-.invitationFooter > strong { display: block; margin-top: 1rem; color: var(--cream); font-family: "Aref Ruqaa", Amiri, serif; font-size: 2.7rem; font-weight: 400; text-shadow: 0 0 25px rgba(223, 186, 115, 0.4); }
-.invitationFooter time { display: block; margin-top: 0.4rem; color: var(--gold-light); font-family: Cairo, sans-serif; font-size: 1rem; opacity: 0.8; }
+.messageForm textarea {
+  min-height: 110px;
+  resize: vertical;
+}
 
+.submitButton {
+  display: inline-flex;
+  min-height: 52px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 20px;
+  background: var(--gold-gradient);
+  box-shadow: 0 6px 25px rgba(197, 160, 89, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #180308;
+  cursor: pointer;
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  transition: transform 250ms ease, box-shadow 250ms ease, opacity 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(197, 160, 89, 0.52);
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+}
+
+.submitButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.successMessage {
+  padding: 1.2rem 0;
+  color: var(--gold-light);
+  font-size: 1.35rem;
+}
+
+.successMessage > span {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  margin: 0 auto 0.8rem;
+  border: 1px solid rgba(223, 186, 115, 0.6);
+  border-radius: 50%;
+  background: rgba(223, 186, 115, 0.12);
+}
+
+.successMessage > span svg {
+  width: 24px;
+  height: 24px;
+}
+
+.successMessage p {
+  margin: 0;
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: 1.45rem;
+}
+
+.savedWishText {
+  display: block;
+  margin: 0.8rem auto 0;
+  padding: 8px 14px;
+  max-width: 460px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(197, 160, 89, 0.35);
+  color: var(--cream);
+  font-size: 1.05rem;
+}
+
+.successMessage small {
+  display: block;
+  margin-top: 0.8rem;
+  color: var(--gold);
+  font-size: 1.05rem;
+}
+
+.resetWishBtn {
+  margin-top: 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(223, 186, 115, 0.7);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.resetWishBtn:hover {
+  color: var(--gold-bright);
+}
+
+/* FOOTER */
+.invitationFooter {
+  padding: 1.8rem 0 2.5rem;
+}
+
+.invitationFooter .divider {
+  margin-bottom: 2rem;
+}
+
+.invitationFooter > p {
+  margin: 0;
+  color: var(--gold-light);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(1.4rem, 5vw, 1.8rem);
+  line-height: 1.85;
+}
+
+.invitationFooter > strong {
+  display: block;
+  margin-top: 0.9rem;
+  color: var(--cream);
+  font-family: "Aref Ruqaa", Amiri, serif;
+  font-size: clamp(2rem, 7vw, 2.7rem);
+  font-weight: 400;
+  text-shadow: 0 0 25px rgba(223, 186, 115, 0.4);
+}
+
+.invitationFooter time {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--gold-light);
+  font-family: Cairo, sans-serif;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+/* DEARLY CREDIT */
 .dearlyCredit {
   display: flex;
   justify-content: center;
-  padding: 1.1rem 1rem 1.5rem;
+  padding: 1.1rem 1rem 2rem;
   color: #7E766D;
   font-family: "Montserrat", sans-serif;
   font-size: 10px;
@@ -295,94 +1051,173 @@
   color: #997736;
 }
 
-.reveal { opacity: 0; transform: translateY(32px); transition: opacity 800ms ease, transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1); }
-.visible { opacity: 1; transform: translateY(0); }
+/* REVEAL ANIMATIONS */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: opacity, transform;
+}
 
-@keyframes title-float { 0%, 100% { transform: translateY(0); opacity: 0.92; } 50% { transform: translateY(-6px); opacity: 1; } }
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
+/* MOBILE FLOATING QUICK ACTIONS BAR */
+.floatingBar {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(22, 3, 7, 0.88);
+  border: 1px solid rgba(223, 186, 115, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(197, 160, 89, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 350ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  direction: rtl;
+}
+
+.floatingBarVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.floatingBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(223, 186, 115, 0.12);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  color: var(--gold-light);
+  font-family: Cairo, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 200ms ease, transform 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.floatingBtn:hover {
+  background: rgba(223, 186, 115, 0.25);
+}
+
+.floatingBtn:active {
+  transform: scale(0.95);
+}
+
+.floatingBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.floatingBtnPrimary {
+  background: var(--gold-gradient);
+  color: #180308;
+  border: none;
+  box-shadow: 0 2px 10px rgba(197, 160, 89, 0.35);
+}
+
+.floatingBtnPrimary:hover {
+  background: var(--gold-gradient);
+  opacity: 0.95;
+}
+
+/* RESPONSIVE BREAKPOINTS */
 @media (max-width: 520px) {
-  .main {
-    background-attachment: scroll;
-    background-position: center top;
-    background-repeat: repeat-y;
-    background-size: 100% auto;
+  .page {
+    padding-right: 14px;
+    padding-left: 14px;
   }
 
-  .page { padding-right: 16px; padding-left: 16px; }
+  .envelopeScene {
+    width: min(94vw, 420px);
+    aspect-ratio: 476 / 340;
+  }
 
-  .hero { padding-top: 44px; padding-bottom: 20px; }
+  .waxSealHint {
+    padding: 8px 18px;
+    font-size: 0.88rem;
+  }
 
-  .bismillah { font-size: 1.7rem; }
+  .countdown {
+    gap: 8px;
+  }
 
-  .heroPoem { font-size: 1.12rem; line-height: 1.85; }
+  .countdownItem {
+    max-width: 72px;
+    min-width: 54px;
+  }
 
-  .eventLead { font-size: 1.35rem; }
+  .countdownValue {
+    min-height: 58px;
+  }
 
-  .tagline { font-size: 1.2rem; }
+  .detailCard {
+    padding: 1.6rem 1rem;
+    border-radius: 14px;
+  }
 
-  .hero h1 { font-size: clamp(2.8rem, 10vw, 4rem); }
+  .guestMessage {
+    padding: 1.6rem 1rem;
+    border-radius: 14px;
+  }
 
-  .quran { padding: 1.5rem 1rem; }
+  .floatingBar {
+    gap: 6px;
+    padding: 6px 8px;
+    width: min(94vw, 360px);
+    justify-content: space-around;
+  }
 
-  .quran blockquote { font-size: clamp(1.3rem, 4.5vw, 1.75rem); line-height: 1.9; }
-
-  .invitation h2 { font-size: 1.85rem; }
-
-  .quote p { font-size: 1.55rem; }
-
-  .countdown { gap: 7px; }
-
-  .countdownItem,
-  .countdownValue { width: 66px; }
-
-  .countdownValue { height: 74px; font-size: 1.8rem; }
-
-  .countdownLabel { font-size: 0.95rem; }
-
-  .detailCard { padding: 1.6rem 1rem; border-radius: 14px; }
-
-  .detailValue { font-size: 1.55rem; }
-
-  .detailSubvalue { font-size: 1.1rem; }
-
-  .guestMessage { padding: 1.6rem 1rem; border-radius: 14px; }
-
-  .submitButton { width: 100%; font-size: 1.2rem; }
-
-  .invitationFooter > strong { font-size: 2.2rem; }
-
-  .envelopeHeading { margin-bottom: 1.6rem; }
-
-  .envelopeHeading p { font-size: 1.45rem; }
-
-  .envelopeHeading span { font-size: 0.9rem; }
-
-  .envelopeScene { width: min(96vw, 420px); aspect-ratio: 476 / 340; }
-
-  .outlineButton { width: 100%; justify-content: center; }
+  .floatingBtn {
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
 }
 
 @media (max-width: 380px) {
-  .page { padding-right: 12px; padding-left: 12px; }
+  .page {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
 
-  .hero h1 { font-size: clamp(2.4rem, 9vw, 3.2rem); }
+  .countdown {
+    gap: 6px;
+  }
 
-  .bismillah { font-size: 1.55rem; }
+  .countdownItem {
+    max-width: 66px;
+    min-width: 48px;
+  }
 
-  .countdown { gap: 5px; }
+  .countdownValue {
+    min-height: 52px;
+    font-size: 1.35rem;
+  }
 
-  .countdownItem,
-  .countdownValue { width: 58px; }
+  .envelopeScene {
+    width: 96vw;
+  }
 
-  .countdownValue { height: 66px; font-size: 1.6rem; }
-
-  .detailCard { padding: 1.4rem 0.8rem; }
-
-  .outlineButton { padding-right: 10px; padding-left: 10px; font-size: 0.78rem; }
-
-  .envelopeScene { width: 98vw; }
-
-  .envelopeHeading p { font-size: 1.25rem; }
+  .waxSealHint {
+    padding: 6px 14px;
+    font-size: 0.82rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

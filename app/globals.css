@@ -1,11 +1,20 @@
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-html,
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  background-color: #180308;
+}
+
 body {
   min-height: 100%;
   margin: 0;
+  background-color: #180308;
+  color: #fdfbf7;
+  overflow-x: hidden;
 }
 
 button {
